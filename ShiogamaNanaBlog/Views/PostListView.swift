@@ -15,40 +15,40 @@ struct PostListView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 0) {
-                header
-                content
-            }
-            .background(Theme.background.ignoresSafeArea())
-            .navigationTitle("塩釜菜那")
-            .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜尋中文或日文標題")
-            .autocorrectionDisabled()
-            .textInputAutocapitalization(.never)
-            .toolbarBackground(Theme.background, for: .navigationBar)
-            .toolbarColorScheme(colorScheme == .dark ? .dark : .light, for: .navigationBar)
-            .navigationDestination(for: PostRoute.self) { route in
-                PostDetailView(postID: route.id)
-            }
-            .safeAreaInset(edge: .top, spacing: 0) {
-                if let bannerText = library.bannerText {
-                    Text(bannerText)
-                        .font(.footnote)
-                        .foregroundStyle(Theme.ink)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity)
-                        .background(.thinMaterial)
-                        .accessibilityLabel(bannerText)
+            content
+                .background(Theme.background.ignoresSafeArea())
+                .navigationTitle("塩釜菜那")
+                .navigationBarTitleDisplayMode(.large)
+                .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "搜尋中文或日文標題")
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .toolbarBackground(Theme.background, for: .navigationBar)
+                .toolbarColorScheme(colorScheme == .dark ? .dark : .light, for: .navigationBar)
+                .navigationDestination(for: PostRoute.self) { route in
+                    PostDetailView(postID: route.id)
                 }
-            }
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if let bannerText = library.bannerText {
+                        Text(bannerText)
+                            .font(.footnote)
+                            .foregroundStyle(Theme.ink)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .frame(maxWidth: .infinity)
+                            .background(.thinMaterial)
+                            .accessibilityLabel(bannerText)
+                    }
+                }
         }
         .tint(Theme.accent)
         .task { await library.bootstrap() }
     }
 
-    private var header: some View {
+    /// Sits in the scrolling content, under the large title and search field.
+    /// A sibling above the `List` is laid out under the search bar until the
+    /// first scroll, including while pull-to-refresh adjusts the navigation bar.
+    private var subtitle: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("部落格中文翻譯")
                 .font(.subheadline)
@@ -59,10 +59,9 @@ struct PostListView: View {
                     .foregroundStyle(Theme.inkSoft)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
 
     @ViewBuilder
@@ -106,9 +105,15 @@ struct PostListView: View {
 
     private func unavailableScroll<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         ScrollView {
-            content()
-                .padding(.top, 32)
-                .frame(maxWidth: .infinity)
+            VStack(alignment: .leading, spacing: 0) {
+                subtitle
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
+                content()
+                    .padding(.top, 32)
+                    .frame(maxWidth: .infinity)
+            }
         }
         .refreshable { await library.refresh() }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -116,6 +121,11 @@ struct PostListView: View {
 
     private var list: some View {
         List {
+            subtitle
+                .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 8, trailing: 20))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+
             ForEach(filteredPosts) { post in
                 NavigationLink(value: PostRoute(id: post.id)) {
                     PostRow(post: post)
