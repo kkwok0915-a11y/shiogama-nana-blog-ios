@@ -3,6 +3,7 @@ import SwiftUI
 struct InstagramView: View {
     @Environment(InstagramArchive.self) private var archive
     @Environment(\.colorScheme) private var colorScheme
+    @State private var path = NavigationPath()
 
     private let columns = [
         GridItem(.flexible(), spacing: 2),
@@ -11,7 +12,7 @@ struct InstagramView: View {
     ]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             content
                 .background(Theme.background.ignoresSafeArea())
                 .navigationTitle("Instagram")
@@ -21,8 +22,17 @@ struct InstagramView: View {
                 .navigationDestination(for: InstagramRoute.self) { route in
                     InstagramDetailView(code: route.code)
                 }
+                .onAppear(perform: openRequestedPost)
+                .onChange(of: archive.openRequest) { _, _ in
+                    openRequestedPost()
+                }
         }
         .tint(Theme.accent)
+    }
+
+    private func openRequestedPost() {
+        guard let code = archive.takeOpenRequest() else { return }
+        path.append(InstagramRoute(code: code))
     }
 
     @ViewBuilder
