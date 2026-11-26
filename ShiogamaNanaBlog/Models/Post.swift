@@ -1,9 +1,11 @@
 import Foundation
 
 /// Public site the app is allowed to read. Image paths in post JSON are
-/// relative to this origin. The app never talks to any other host.
+/// relative to this origin. Photo bytes may also come from `photoHost`.
 enum BlogSite {
     static let host = "shiogama-nana-blog.vercel.app"
+    /// Public Vercel Blob store. `/photos/*` on `host` 308s here, same path.
+    static let photoHost = "oulym35m6pqzgo1d.public.blob.vercel-storage.com"
     static let origin = URL(string: "https://shiogama-nana-blog.vercel.app")!
     static let postsURL = URL(string: "https://shiogama-nana-blog.vercel.app/api/posts")!
 
@@ -15,7 +17,8 @@ enum BlogSite {
     }
 
     /// Resolves a photo `src` from the posts API. Absolute URLs must already
-    /// point at this site. Relative URLs are joined onto the site origin.
+    /// point at this site, or at `photoHost` under `/photos/`. Relative URLs
+    /// stay on the site origin so disk-cache keys do not change.
     static func imageURL(from src: String) -> URL? {
         let trimmed = src.trimmingCharacters(in: .whitespacesAndNewlines)
         let lower = trimmed.lowercased()
@@ -24,7 +27,9 @@ enum BlogSite {
             return nil
         }
         if let absolute = URL(string: trimmed), absolute.scheme != nil {
-            return allows(absolute) ? absolute : nil
+            if allows(absolute) { return absolute }
+            if absolute.host?.lowercased() == photoHost, allowsPhoto(absolute) { return absolute }
+            return nil
         }
         guard trimmed.hasPrefix("/"), !trimmed.hasPrefix("//") else { return nil }
         guard let resolved = URL(string: trimmed, relativeTo: origin)?.absoluteURL else { return nil }
@@ -56,6 +61,52 @@ enum BlogSite {
               url.password == nil
         else { return false }
         return true
+    }
+
+    /// Blog host or the public blob store. Comparison is case-insensitive.
+    static func isTrustedPhotoHost(_ host: String?) -> Bool {
+        guard let lowered = host?.lowercased() else { return false }
+        return lowered == Self.host || lowered == photoHost
+    }
+
+    /// HTTPS photo URL on a trusted host. The path must stay under `/photos/`
+    /// and must not contain `.` or `..` segments.
+    static func allowsPhoto(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == "https",
+              isTrustedPhotoHost(url.host),
+              url.user == nil,
+              url.password == nil,
+              isPhotosPath(url)
+        else { return false }
+        return true
+    }
+
+    /// Fetch URL for a photo. Blog-host `/photos/` URLs are rewritten onto
+    /// `photoHost` with the same path so the 308 can be skipped. Callers keep
+    /// using the original URL as the disk-cache key.
+    static func photoRequestURL(for url: URL) -> URL? {
+        guard allowsPhoto(url) else { return nil }
+        guard url.host?.lowercased() == host else { return url }
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        components.scheme = "https"
+        components.host = photoHost
+        components.port = nil
+        components.user = nil
+        components.password = nil
+        guard let rewritten = components.url,
+              allowsPhoto(rewritten),
+              rewritten.path == url.path
+        else { return url }
+        return rewritten
+    }
+
+    private static func isPhotosPath(_ url: URL) -> Bool {
+        guard url.path.hasPrefix("/photos/") else { return false }
+        let segments = url.path.split(separator: "/", omittingEmptySubsequences: true)
+        guard segments.count >= 2, segments.first == "photos" else { return false }
+        return segments.allSatisfy { $0 != "." && $0 != ".." }
     }
 }
 

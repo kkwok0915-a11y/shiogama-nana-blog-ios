@@ -3,8 +3,9 @@ import Foundation
 import ImageIO
 import UIKit
 
-/// Memory plus disk cache for photos on the blog host. Disk files are the
-/// original bytes; views downsample when they display them.
+/// Memory plus disk cache for photos. Disk files are the original bytes,
+/// keyed by the caller URL (the blog origin for relative `src` values).
+/// Views downsample when they display them.
 actor ImageStore {
     static let shared = ImageStore()
 
@@ -68,16 +69,18 @@ actor ImageStore {
     }
 
     private func download(_ url: URL) async -> Data? {
-        guard url.scheme?.lowercased() == "https", url.host?.lowercased() == BlogSite.host else { return nil }
+        // `url` is the cache key. `/photos/` on the blog host is fetched from
+        // the blob origin so the 308 can be skipped.
+        guard let requestURL = BlogSite.photoRequestURL(for: url) else { return nil }
         do {
-            var request = URLRequest(url: url)
+            var request = URLRequest(url: requestURL)
             request.timeoutInterval = 20
             let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse,
                   (200..<300).contains(http.statusCode),
                   let finalURL = http.url,
-                  finalURL.scheme?.lowercased() == "https",
-                  finalURL.host?.lowercased() == BlogSite.host,
+                  BlogSite.allowsPhoto(finalURL),
+                  finalURL.path == url.path,
                   data.count > 32,
                   data.count < 20 * 1024 * 1024
             else { return nil }
@@ -118,6 +121,8 @@ actor ImageStore {
     }
 
     private func fileURL(for url: URL) -> URL {
+        // Caller URL, not the blob fetch URL, so photos cached before the
+        // blob redirect still hit.
         let name = SHA256.hash(data: Data(url.absoluteString.utf8)).map { String(format: "%02x", $0) }.joined()
         return directory.appendingPathComponent(name).appendingPathExtension("img")
     }

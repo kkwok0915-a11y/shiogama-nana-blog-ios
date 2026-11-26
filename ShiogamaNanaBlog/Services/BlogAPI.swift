@@ -120,7 +120,9 @@ enum BlogAPI {
     }
 }
 
-/// Refuses redirects that leave the public blog host.
+/// Refuses redirects that leave the public blog host. A `/photos/` request
+/// may follow an https redirect onto the public blob store when the path
+/// does not change. API redirects stay on the blog host.
 private final class RedirectLock: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     func urlSession(
         _ session: URLSession,
@@ -131,12 +133,27 @@ private final class RedirectLock: NSObject, URLSessionTaskDelegate, @unchecked S
     ) {
         guard let url = request.url,
               url.scheme?.lowercased() == "https",
-              url.host?.lowercased() == BlogSite.host,
-              url.user == nil
+              url.user == nil,
+              url.password == nil
         else {
             completionHandler(nil)
             return
         }
-        completionHandler(request)
+        if url.host?.lowercased() == BlogSite.host {
+            completionHandler(request)
+            return
+        }
+        // Only a `/photos/` request may leave for the blob store, and only
+        // onto the same path. `/api/…` stays on the blog host.
+        if url.host?.lowercased() == BlogSite.photoHost,
+           BlogSite.isTrustedPhotoHost(url.host),
+           let source = task.originalRequest?.url,
+           BlogSite.allowsPhoto(source),
+           BlogSite.allowsPhoto(url),
+           source.path == url.path {
+            completionHandler(request)
+            return
+        }
+        completionHandler(nil)
     }
 }
