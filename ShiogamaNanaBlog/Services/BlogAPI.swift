@@ -3,7 +3,7 @@ import Foundation
 import FoundationNetworking
 #endif
 
-enum BlogAPIError: Error {
+enum BlogAPIError: Error, Sendable {
     case badURL
     case badStatus(Int)
     case badResponse
@@ -27,17 +27,25 @@ enum BlogAPI {
 
     static func fetchPosts() async throws -> [Post] {
         let data = try await fetchData(from: BlogSite.postsURL)
-        return try decodePosts(from: data)
+        return try await decodeOffMain(data)
     }
 
     static func fetchPost(id: String) async throws -> Post {
         guard let url = BlogSite.postURL(id: id) else { throw BlogAPIError.badID }
         let data = try await fetchData(from: url)
-        let posts = try decodePosts(from: data)
+        let posts = try await decodeOffMain(data)
         guard let post = posts.first(where: { $0.id == id }) else {
             throw BlogAPIError.notFound
         }
         return post
+    }
+
+    /// JSON work is detached from the caller's actor. `LibraryModel` is on the
+    /// main actor, and pull-to-refresh awaits this fetch.
+    static func decodeOffMain(_ data: Data) async throws -> [Post] {
+        try await Task.detached(priority: .userInitiated) {
+            try decodePosts(from: data)
+        }.value
     }
 
     static func decodePosts(from data: Data) throws -> [Post] {
