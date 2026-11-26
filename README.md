@@ -6,8 +6,12 @@ The app reads only the site's public JSON:
 
 - `GET https://shiogama-nana-blog.vercel.app/api/posts` — the list, newest `post_date` first
 - `GET https://shiogama-nana-blog.vercel.app/api/posts?id=<id>` — one post
+- `GET https://shiogama-nana-blog.vercel.app/api/instagram` — Instagram posts, newest `taken_at` first
+- `GET https://shiogama-nana-blog.vercel.app/api/instagram?code=<code>` — one Instagram post
 
 Each post has `id`, `title_zh`, `title_jp`, `post_date`, `original_url`, and `body`. A body block is either `{ "type": "text", "text": "..." }` or `{ "type": "photo", "src": "/photos/…", "alt": "…", "width": …, "height": … }`. Photo `src` values are joined onto `https://shiogama-nana-blog.vercel.app`. The app also accepts a block whose type is `image`, in case that name is used later. The live list includes photo blocks. If a list response does not, the gallery requests `GET /api/posts?id=<id>` for each post (up to four at a time) and stores the result on the phone.
+
+An Instagram post has `code`, `taken_at`, `caption`, `permalink`, `slides`, `photo_count`, and `added_at`. A slide is a photo (`src` such as `/photos/ig/…/*.jpg`), a video, or a photo that was not archived (`src` null). Unknown slide types are kept so the page number still matches Instagram. Relative `src` paths are joined onto `https://shiogama-nana-blog.vercel.app`. The grid uses the smaller `-sm.webp` next to each `.jpg`, and the `.jpg` when that file is missing. Dates are shown in Japan time.
 
 The app uses that public JSON only. It does not include an API key or a database client.
 
@@ -16,10 +20,11 @@ The app uses that public JSON only. It does not include an API key or a database
 - Browse posts newest first, with the Chinese title, Japanese title, and date.
 - Open a post. Line breaks in the text are kept, and photos sit between the paragraphs. Tap a photo for a full-screen view (pinch to zoom, swipe down to close). From that view you can save the photo to the iPhone photo library. iOS asks the first time.
 - Open the Gallery tab. Every photo from every post is shown as a square thumbnail, newest post first, grouped by month, with the photo count. Tap a photo for the same full-screen viewer: swipe left or right through the gallery, pinch to zoom, and swipe down to close. A button opens the post that photo came from, and another saves it to the photo library.
+- Open the Instagram tab. Posts are a three-column grid of square thumbnails, newest first. A post with more than one slide shows that count. Pull down to refresh. Open a post to swipe through its slides. Tap a photo for the same full-screen viewer (pinch to zoom, swipe down to close). A video, or a slide without an archived photo, has a button that opens that slide on Instagram. The date is Japan time, line breaks in the caption are kept, and the caption can be selected. A link opens the post on Instagram.
 - Open the official Japanese post in Safari.
 - Search Chinese or Japanese titles.
-- Pull down to refresh the list or the gallery. Opening a post also refreshes that post.
-- Read offline. The last successful list, each saved post, and photos that have already been downloaded stay on the phone. If the list response has no photo blocks, the app loads each post a few at a time, saves those posts, and the gallery still opens offline after that first successful load. Pull to refresh again when you are back online.
+- Pull down to refresh the list, the gallery, or Instagram. Opening a blog post or an Instagram post also refreshes that post.
+- Read offline. The last successful list, each saved post, and photos that have already been downloaded stay on the phone. If the list response has no photo blocks, the app loads each post a few at a time, saves those posts, and the gallery still opens offline after that first successful load. The Instagram tab keeps the last successful post list the same way. Pull to refresh again when you are back online.
 - Light and dark appearance follow the iPhone setting (Settings > Display & Brightness).
 
 Requires iOS 17 or later. No CocoaPods and no Swift package dependencies.

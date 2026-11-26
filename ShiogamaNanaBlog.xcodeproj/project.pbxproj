@@ -23,6 +23,11 @@
 		A1000004000000000000000F /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003000000000000000F /* GalleryView.swift */; };
 		A10000040000000000000010 /* PhotoDetailLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000010 /* PhotoDetailLoader.swift */; };
 		A10000040000000000000011 /* PostListDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000011 /* PostListDiff.swift */; };
+		A10000040000000000000012 /* InstagramPost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000012 /* InstagramPost.swift */; };
+		A10000040000000000000013 /* InstagramCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000013 /* InstagramCache.swift */; };
+		A10000040000000000000014 /* InstagramArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000014 /* InstagramArchive.swift */; };
+		A10000040000000000000015 /* InstagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000015 /* InstagramView.swift */; };
+		A10000040000000000000016 /* InstagramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000016 /* InstagramDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +49,11 @@
 		A1000003000000000000000F /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
 		A10000030000000000000010 /* PhotoDetailLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoDetailLoader.swift; sourceTree = "<group>"; };
 		A10000030000000000000011 /* PostListDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostListDiff.swift; sourceTree = "<group>"; };
+		A10000030000000000000012 /* InstagramPost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramPost.swift; sourceTree = "<group>"; };
+		A10000030000000000000013 /* InstagramCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramCache.swift; sourceTree = "<group>"; };
+		A10000030000000000000014 /* InstagramArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramArchive.swift; sourceTree = "<group>"; };
+		A10000030000000000000015 /* InstagramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramView.swift; sourceTree = "<group>"; };
+		A10000030000000000000016 /* InstagramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +101,7 @@
 			children = (
 				A10000030000000000000004 /* Post.swift */,
 				A1000003000000000000000E /* GalleryCatalog.swift */,
+				A10000030000000000000012 /* InstagramPost.swift */,
 				A10000030000000000000011 /* PostListDiff.swift */,
 			);
 			path = Models;
@@ -102,6 +113,8 @@
 				A10000030000000000000005 /* BlogAPI.swift */,
 				A10000030000000000000006 /* PostCache.swift */,
 				A10000030000000000000007 /* ImageStore.swift */,
+				A10000030000000000000014 /* InstagramArchive.swift */,
+				A10000030000000000000013 /* InstagramCache.swift */,
 				A10000030000000000000008 /* LibraryModel.swift */,
 				A10000030000000000000010 /* PhotoDetailLoader.swift */,
 			);
@@ -113,6 +126,8 @@
 			children = (
 				A1000003000000000000000C /* CachedImage.swift */,
 				A1000003000000000000000F /* GalleryView.swift */,
+				A10000030000000000000016 /* InstagramDetailView.swift */,
+				A10000030000000000000015 /* InstagramView.swift */,
 				A1000003000000000000000B /* PhotoViewer.swift */,
 				A1000003000000000000000A /* PostDetailView.swift */,
 				A10000030000000000000009 /* PostListView.swift */,
@@ -205,6 +220,11 @@
 				A1000004000000000000000F /* GalleryView.swift in Sources */,
 				A10000040000000000000010 /* PhotoDetailLoader.swift in Sources */,
 				A10000040000000000000011 /* PostListDiff.swift in Sources */,
+				A10000040000000000000012 /* InstagramPost.swift in Sources */,
+				A10000040000000000000013 /* InstagramCache.swift in Sources */,
+				A10000040000000000000014 /* InstagramArchive.swift in Sources */,
+				A10000040000000000000015 /* InstagramView.swift in Sources */,
+				A10000040000000000000016 /* InstagramDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -40,6 +40,21 @@ enum BlogAPI {
         return post
     }
 
+    static func fetchInstagramPosts() async throws -> [InstagramPost] {
+        let data = try await fetchData(from: BlogSite.instagramURL)
+        return try await decodeInstagramOffMain(data)
+    }
+
+    static func fetchInstagramPost(code: String) async throws -> InstagramPost {
+        guard let url = BlogSite.instagramPostURL(code: code) else { throw BlogAPIError.badID }
+        let data = try await fetchData(from: url)
+        let posts = try await decodeInstagramOffMain(data)
+        guard let post = posts.first(where: { $0.code == code }) else {
+            throw BlogAPIError.notFound
+        }
+        return post
+    }
+
     /// JSON work is detached from the caller's actor. `LibraryModel` is on the
     /// main actor, and pull-to-refresh awaits this fetch.
     static func decodeOffMain(_ data: Data) async throws -> [Post] {
@@ -78,6 +93,16 @@ enum BlogAPI {
         }
         if posts.isEmpty { throw BlogAPIError.badResponse }
         return PostSorting.newestFirst(posts)
+    }
+
+    static func decodeInstagramOffMain(_ data: Data) async throws -> [InstagramPost] {
+        try await Task.detached(priority: .userInitiated) {
+            do {
+                return try InstagramPost.decodeList(from: data)
+            } catch {
+                throw BlogAPIError.badResponse
+            }
+        }.value
     }
 
     private static func fetchData(from url: URL) async throws -> Data {
