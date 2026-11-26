@@ -52,15 +52,18 @@ actor ImageStore {
             touch(key)
             return cached
         }
-        guard let data = await data(for: url),
-              let image = Self.downsample(data: data, maxPixel: maxPixel)
-        else { return nil }
+        guard let data = await data(for: url) else { return nil }
+        if let cached = memory[key] {
+            touch(key)
+            return cached
+        }
+        guard let image = await Self.decodedThumbnail(data: data, maxPixel: maxPixel) else { return nil }
         remember(image, key: key)
         return image
     }
 
     func data(for url: URL) async -> Data? {
-        if let cached = read(url) { return cached }
+        if let cached = await read(url) { return cached }
         return await download(url)
     }
 
@@ -76,24 +79,42 @@ actor ImageStore {
                   finalURL.scheme?.lowercased() == "https",
                   finalURL.host?.lowercased() == BlogSite.host,
                   data.count > 32,
-                  data.count < 20 * 1024 * 1024,
-                  Self.isImage(data)
+                  data.count < 20 * 1024 * 1024
             else { return nil }
-            try? data.write(to: fileURL(for: url), options: .atomic)
-            return data
+            let file = fileURL(for: url)
+            let accepted = await Task.detached(priority: .utility) {
+                guard Self.isImage(data) else { return false }
+                try? data.write(to: file, options: .atomic)
+                return true
+            }.value
+            return accepted ? data : nil
         } catch {
             return nil
         }
     }
 
-    private func read(_ url: URL) -> Data? {
+    private func read(_ url: URL) async -> Data? {
         let file = fileURL(for: url)
+        return await Task.detached(priority: .utility) {
+            Self.readImageFile(at: file)
+        }.value
+    }
+
+    private nonisolated static func readImageFile(at file: URL) -> Data? {
         guard let data = try? Data(contentsOf: file) else { return nil }
-        guard Self.isImage(data) else {
+        guard isImage(data) else {
             try? FileManager.default.removeItem(at: file)
             return nil
         }
         return data
+    }
+
+    /// ImageIO downsampling is CPU-heavy. Keep it off the main actor and off
+    /// this actor's serial executor so cache hits are not stuck behind it.
+    private nonisolated static func decodedThumbnail(data: Data, maxPixel: CGFloat) async -> UIImage? {
+        await Task.detached(priority: .userInitiated) {
+            downsample(data: data, maxPixel: maxPixel)
+        }.value
     }
 
     private func fileURL(for url: URL) -> URL {
