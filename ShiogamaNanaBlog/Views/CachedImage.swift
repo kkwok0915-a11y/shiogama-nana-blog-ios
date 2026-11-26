@@ -3,6 +3,9 @@ import UIKit
 
 struct CachedImage: View {
     let url: URL?
+    /// Tried only when `url` cannot be decoded. Grid thumbnails pass the
+    /// full-size JPEG here and the smaller WebP as `url`.
+    var fallbackURL: URL? = nil
     var maxPixel: CGFloat = 1600
     var contentMode: ContentMode = .fit
     var placeholderAspect: CGFloat? = nil
@@ -25,7 +28,7 @@ struct CachedImage: View {
         }
         .accessibilityHidden(true)
         .accessibilityIgnoresInvertColors(image != nil)
-        .task(id: url?.absoluteString) {
+        .task(id: "\(url?.absoluteString ?? "")|\(fallbackURL?.absoluteString ?? "")") {
             await load()
         }
     }
@@ -37,22 +40,38 @@ struct CachedImage: View {
                 Image(systemName: "photo")
                     .font(.title3)
                     .foregroundStyle(Theme.inkSoft)
-            } else if url != nil {
+            } else if url != nil || fallbackURL != nil {
                 ProgressView()
             }
         }
     }
 
     private func load() async {
-        guard let url else {
+        let primary = url
+        let secondary = fallbackURL
+        guard primary != nil || secondary != nil else {
             image = nil
             failed = true
             return
         }
         failed = false
-        let loaded = await ImageStore.shared.image(for: url, maxPixel: maxPixel)
-        guard !Task.isCancelled else { return }
-        image = loaded
-        failed = loaded == nil
+        if let primary {
+            let loaded = await ImageStore.shared.image(for: primary, maxPixel: maxPixel)
+            guard !Task.isCancelled else { return }
+            if let loaded {
+                image = loaded
+                failed = false
+                return
+            }
+        }
+        if let secondary, secondary != primary {
+            let loaded = await ImageStore.shared.image(for: secondary, maxPixel: maxPixel)
+            guard !Task.isCancelled else { return }
+            image = loaded
+            failed = loaded == nil
+            return
+        }
+        image = nil
+        failed = true
     }
 }
