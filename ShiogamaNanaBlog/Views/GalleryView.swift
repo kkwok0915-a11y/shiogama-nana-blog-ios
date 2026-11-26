@@ -175,12 +175,7 @@ struct GalleryView: View {
 
     private var filterRow: some View {
         HStack(alignment: .center, spacing: 8) {
-            if showSourceFilter {
-                sourcePicker
-            } else {
-                Spacer(minLength: 0)
-            }
-            GalleryDateFilter(dates: availableDates, value: shownDate) { requestedDate = $0 }
+            sourcePicker
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -188,9 +183,9 @@ struct GalleryView: View {
 
     private var sourcePicker: some View {
         Picker("照片來源", selection: $source) {
-            Text("全部 \(counts.all)").tag(GallerySource.all)
-            Text("Blog \(counts.blog)").tag(GallerySource.blog)
-            Text("Instagram \(counts.instagram)").tag(GallerySource.instagram)
+            Text("全部").tag(GallerySource.all)
+            Text("Blog").tag(GallerySource.blog)
+            Text("Instagram").tag(GallerySource.instagram)
         }
         .pickerStyle(.segmented)
         .accessibilityLabel("照片來源")

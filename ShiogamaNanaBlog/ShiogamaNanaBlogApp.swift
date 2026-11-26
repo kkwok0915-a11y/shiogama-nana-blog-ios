@@ -20,16 +20,16 @@ struct ShiogamaNanaBlogApp: App {
                         Label("文章", systemImage: "doc.text")
                     }
                     .tag(RootTab.posts)
-                GalleryView()
-                    .tabItem {
-                        Label("照片", systemImage: "photo.on.rectangle.angled")
-                    }
-                    .tag(RootTab.photos)
                 InstagramView()
                     .tabItem {
                         Label("Instagram", systemImage: "camera")
                     }
                     .tag(RootTab.instagram)
+                GalleryView()
+                    .tabItem {
+                        Label("照片", systemImage: "photo.on.rectangle.angled")
+                    }
+                    .tag(RootTab.photos)
             }
             .tint(Theme.accent)
             .environment(library)
