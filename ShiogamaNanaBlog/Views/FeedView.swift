@@ -204,9 +204,9 @@ struct FeedView: View {
         HStack(alignment: .center, spacing: 8) {
             if showSourceFilter {
                 Picker("動態來源", selection: $source) {
-                    Text("全部 \(counts.all)").tag(GallerySource.all)
-                    Text("Blog \(counts.blog)").tag(GallerySource.blog)
-                    Text("IG \(counts.instagram)").tag(GallerySource.instagram)
+                    Text("全部").tag(GallerySource.all)
+                    Text("Blog").tag(GallerySource.blog)
+                    Text("IG").tag(GallerySource.instagram)
                 }
                 .pickerStyle(.segmented)
                 .accessibilityLabel("動態來源")
