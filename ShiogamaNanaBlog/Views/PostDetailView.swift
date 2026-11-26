@@ -86,6 +86,7 @@ struct PostDetailView: View {
                             } label: {
                                 CachedImage(
                                     url: url,
+                                    previewURL: GalleryCatalog.thumbnailURL(for: photo.src),
                                     maxPixel: 2048,
                                     contentMode: .fit,
                                     placeholderAspect: photo.aspectRatio.map { CGFloat($0) }

@@ -223,13 +223,24 @@ extension GalleryCatalog {
 
     /// Newest `yyyy-MM-dd` first. Only real calendar days are kept.
     static func uniqueDates(in items: [MixedGalleryPhoto]) -> [String] {
+        uniqueDates(items.map(\.day))
+    }
+
+    static func uniqueDates(_ days: [String?]) -> [String] {
         var seen = Set<String>()
         var dates: [String] = []
-        for item in items {
-            guard let day = item.day, isCalendarDay(day), seen.insert(day).inserted else { continue }
+        for day in days {
+            guard let day, isCalendarDay(day), seen.insert(day).inserted else { continue }
             dates.append(day)
         }
         return dates.sorted { $0 > $1 }
+    }
+
+    /// Small `-sm.webp` sibling of a full photo URL, when this host has one.
+    static func previewURL(for imageURL: URL) -> URL? {
+        let path = imageURL.path
+        guard let small = InstagramImage.smallSource(from: path), small != path else { return nil }
+        return BlogSite.imageURL(from: small)
     }
 
     /// Closest available day to `want`. An exact match wins. A tie keeps the

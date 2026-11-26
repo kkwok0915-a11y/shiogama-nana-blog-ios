@@ -55,7 +55,7 @@ struct GalleryView: View {
         NavigationStack(path: $path) {
             content
                 .background(Theme.background.ignoresSafeArea())
-                .navigationTitle("照片")
+                .navigationTitle("相簿")
                 .navigationBarTitleDisplayMode(.large)
                 .toolbarBackground(Theme.background, for: .navigationBar)
                 .toolbarColorScheme(colorScheme == .dark ? .dark : .light, for: .navigationBar)
@@ -86,8 +86,15 @@ struct GalleryView: View {
     @ViewBuilder
     private var content: some View {
         if allPhotos.isEmpty && (library.isLoadingInitial || archive.isLoadingInitial) {
-            ProgressView("載入照片…")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 2) {
+                    ForEach(0..<12, id: \.self) { _ in
+                        Shimmer().aspectRatio(1, contentMode: .fit)
+                    }
+                }
+            }
+            .accessibilityLabel("載入照片")
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if allPhotos.isEmpty {
             unavailableScroll {
                 if library.isHydratingPhotos {
