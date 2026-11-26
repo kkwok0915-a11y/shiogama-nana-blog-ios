@@ -61,6 +61,10 @@ struct PostCache {
 
     func savePost(_ post: Post) {
         guard let post = post.normalized(), BlogSite.isSafeID(post.id) else { return }
+        if let existing = loadPost(id: post.id),
+           !GalleryCatalog.shouldReplaceCachedPost(existing: existing, with: post) {
+            return
+        }
         write(post, to: postURL(id: post.id))
     }
 
