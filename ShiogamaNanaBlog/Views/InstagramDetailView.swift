@@ -178,6 +178,7 @@ private struct InstagramCarousel: View {
             if let photo = slide.photo, let url = photo.url {
                 CachedImage(
                     url: url,
+                    previewURL: photo.thumbnailURL,
                     maxPixel: 2048,
                     contentMode: .fit,
                     placeholderAspect: photo.aspectRatio.map { CGFloat($0) }

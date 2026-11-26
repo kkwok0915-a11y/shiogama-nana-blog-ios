@@ -1,33 +1,27 @@
 import SwiftUI
 
 enum RootTab: Hashable {
-    case posts
+    case feed
     case photos
-    case instagram
 }
 
 @main
 struct ShiogamaNanaBlogApp: App {
     @State private var library = LibraryModel()
     @State private var instagram = InstagramArchive()
-    @State private var tab = RootTab.posts
+    @State private var tab = RootTab.feed
 
     var body: some Scene {
         WindowGroup {
             TabView(selection: $tab) {
-                PostListView()
+                FeedView()
                     .tabItem {
-                        Label("文章", systemImage: "doc.text")
+                        Label("動態", systemImage: "list.bullet")
                     }
-                    .tag(RootTab.posts)
-                InstagramView()
-                    .tabItem {
-                        Label("Instagram", systemImage: "camera")
-                    }
-                    .tag(RootTab.instagram)
+                    .tag(RootTab.feed)
                 GalleryView()
                     .tabItem {
-                        Label("照片", systemImage: "photo.on.rectangle.angled")
+                        Label("相簿", systemImage: "photo.on.rectangle.angled")
                     }
                     .tag(RootTab.photos)
             }
@@ -36,7 +30,7 @@ struct ShiogamaNanaBlogApp: App {
             .environment(instagram)
             .onChange(of: instagram.openRequest) { _, code in
                 if code != nil {
-                    tab = .instagram
+                    tab = .feed
                 }
             }
             .task { await library.bootstrap() }

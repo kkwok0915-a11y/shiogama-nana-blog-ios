@@ -22,6 +22,8 @@ struct PhotoViewer: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var index: Int
     @State private var images: [URL: UIImage] = [:]
+    @State private var previews: [URL: UIImage] = [:]
+    @State private var revealed: Set<URL> = []
     @State private var failed: Set<URL> = []
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
@@ -141,29 +143,43 @@ struct PhotoViewer: View {
     private func page(at offset: Int, width: CGFloat, height: CGFloat) -> some View {
         let photo = photos.indices.contains(offset) ? photos[offset] : nil
         Group {
-            if let photo, let image = images[photo.url] {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .accessibilityLabel(photo.alt)
-                    .accessibilityHint(accessibilityHint)
-                    .accessibilityAddTraits(.isImage)
-                    .accessibilityZoomAction { action in
-                        guard offset == index else { return }
-                        if action.direction == .zoomIn {
-                            setScale(min(scale + 1, 5))
-                        } else if action.direction == .zoomOut {
-                            setScale(max(scale - 1, 1))
+            if let photo {
+                ZStack {
+                    if let preview = previews[photo.url] {
+                        Image(uiImage: preview)
+                            .resizable()
+                            .scaledToFit()
+                            .blur(radius: reduceMotion ? 0 : 16)
+                    } else if images[photo.url] == nil, failed.contains(photo.url) {
+                        VStack(spacing: 12) {
+                            Image(systemName: "photo")
+                                .font(.largeTitle)
+                            Text("照片無法顯示")
+                                .font(.body)
                         }
+                        .foregroundStyle(.white)
+                    } else if images[photo.url] == nil {
+                        ProgressView()
+                            .tint(.white)
                     }
-            } else if let photo, failed.contains(photo.url) {
-                VStack(spacing: 12) {
-                    Image(systemName: "photo")
-                        .font(.largeTitle)
-                    Text("照片無法顯示")
-                        .font(.body)
+                    if let image = images[photo.url] {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .opacity(reduceMotion || revealed.contains(photo.url) ? 1 : 0)
+                            .accessibilityLabel(photo.alt)
+                            .accessibilityHint(accessibilityHint)
+                            .accessibilityAddTraits(.isImage)
+                            .accessibilityZoomAction { action in
+                                guard offset == index else { return }
+                                if action.direction == .zoomIn {
+                                    setScale(min(scale + 1, 5))
+                                } else if action.direction == .zoomOut {
+                                    setScale(max(scale - 1, 1))
+                                }
+                            }
+                    }
                 }
-                .foregroundStyle(.white)
             } else {
                 ProgressView()
                     .tint(.white)
@@ -435,11 +451,24 @@ struct PhotoViewer: View {
         guard photos.indices.contains(offset) else { return }
         let url = photos[offset].url
         if images[url] != nil { return }
+        if previews[url] == nil, let previewURL = GalleryCatalog.previewURL(for: url) {
+            if let preview = await ImageStore.shared.image(for: previewURL, maxPixel: 360) {
+                guard !Task.isCancelled else { return }
+                previews[url] = preview
+            }
+        }
         let loaded = await ImageStore.shared.image(for: url, maxPixel: 2048)
         guard !Task.isCancelled else { return }
         if let loaded {
             images[url] = loaded
             failed.remove(url)
+            if reduceMotion {
+                revealed.insert(url)
+            } else {
+                withAnimation(.easeOut(duration: 0.45)) {
+                    revealed.insert(url)
+                }
+            }
         } else if images[url] == nil {
             failed.insert(url)
         }
@@ -451,6 +480,7 @@ struct PhotoViewer: View {
         let upper = min(photos.count, index + 4)
         let keep = Set(photos[lower..<upper].map(\.url))
         images = images.filter { keep.contains($0.key) }
+        previews = previews.filter { keep.contains($0.key) }
     }
 
     private func saveCurrentPhoto() {
