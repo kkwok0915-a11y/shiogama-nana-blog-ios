@@ -11,6 +11,8 @@ final class InstagramArchive {
     private(set) var loadFailed = false
     private(set) var bannerText: String?
     private(set) var lastUpdated: Date?
+    /// Set by the gallery when 查看貼文 should open this post on the Instagram tab.
+    var openRequest: String?
 
     @ObservationIgnored private let cache: InstagramCache
     @ObservationIgnored private var didStart = false
@@ -60,6 +62,17 @@ final class InstagramArchive {
 
     func post(code: String) -> InstagramPost? {
         posts.first { $0.code == code }
+    }
+
+    func requestOpen(code: String) {
+        guard InstagramPost.isSafeCode(code) else { return }
+        openRequest = code
+    }
+
+    func takeOpenRequest() -> String? {
+        let code = openRequest
+        openRequest = nil
+        return code
     }
 
     /// Refreshes one post. A failure leaves the copy already on screen.

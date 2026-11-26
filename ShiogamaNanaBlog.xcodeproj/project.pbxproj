@@ -28,6 +28,7 @@
 		A10000040000000000000014 /* InstagramArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000014 /* InstagramArchive.swift */; };
 		A10000040000000000000015 /* InstagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000015 /* InstagramView.swift */; };
 		A10000040000000000000016 /* InstagramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000016 /* InstagramDetailView.swift */; };
+		A10000040000000000000017 /* GalleryDateFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000017 /* GalleryDateFilter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		A10000030000000000000014 /* InstagramArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramArchive.swift; sourceTree = "<group>"; };
 		A10000030000000000000015 /* InstagramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramView.swift; sourceTree = "<group>"; };
 		A10000030000000000000016 /* InstagramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstagramDetailView.swift; sourceTree = "<group>"; };
+		A10000030000000000000017 /* GalleryDateFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryDateFilter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +128,7 @@
 			children = (
 				A1000003000000000000000C /* CachedImage.swift */,
 				A1000003000000000000000F /* GalleryView.swift */,
+				A10000030000000000000017 /* GalleryDateFilter.swift */,
 				A10000030000000000000016 /* InstagramDetailView.swift */,
 				A10000030000000000000015 /* InstagramView.swift */,
 				A1000003000000000000000B /* PhotoViewer.swift */,
@@ -225,6 +228,7 @@
 				A10000040000000000000014 /* InstagramArchive.swift in Sources */,
 				A10000040000000000000015 /* InstagramView.swift in Sources */,
 				A10000040000000000000016 /* InstagramDetailView.swift in Sources */,
+				A10000040000000000000017 /* GalleryDateFilter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

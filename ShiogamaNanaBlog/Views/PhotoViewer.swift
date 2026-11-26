@@ -8,12 +8,16 @@ struct PresentedPhoto: Identifiable, Hashable {
     var alt: String
     var postID: String? = nil
     var postTitle: String? = nil
+    var instagramCode: String? = nil
+    /// Permalink for this slide, including `img_index` when it is an Instagram photo.
+    var instagramURL: URL? = nil
 }
 
 struct PhotoViewer: View {
     private let photos: [PresentedPhoto]
     private let onClose: () -> Void
     private let onOpenPost: ((String) -> Void)?
+    private let onOpenInstagram: ((String) -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var index: Int
@@ -38,11 +42,13 @@ struct PhotoViewer: View {
         photos: [PresentedPhoto],
         initialID: String,
         onClose: @escaping () -> Void,
-        onOpenPost: ((String) -> Void)?
+        onOpenPost: ((String) -> Void)?,
+        onOpenInstagram: ((String) -> Void)? = nil
     ) {
         self.photos = photos
         self.onClose = onClose
         self.onOpenPost = onOpenPost
+        self.onOpenInstagram = onOpenInstagram
         let start = photos.firstIndex(where: { $0.id == initialID }) ?? 0
         _index = State(initialValue: start)
     }
@@ -259,6 +265,36 @@ struct PhotoViewer: View {
                     .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .accessibilityHint("開啟這張照片的文章")
+            }
+            if let photo = currentPhoto, photo.instagramCode != nil || photo.instagramURL != nil {
+                HStack(spacing: 8) {
+                    if let code = photo.instagramCode, let onOpenInstagram {
+                        Button {
+                            onOpenInstagram(code)
+                        } label: {
+                            Text("查看貼文")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .frame(maxWidth: .infinity)
+                                .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .accessibilityHint("開啟這張照片的 Instagram 貼文")
+                    }
+                    if let url = photo.instagramURL {
+                        Link(destination: url) {
+                            Text("Instagram ↗")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .frame(maxWidth: .infinity)
+                                .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .accessibilityHint("在 Safari 開啟這一張")
+                    }
+                }
             }
         }
         .padding(.horizontal, 16)
