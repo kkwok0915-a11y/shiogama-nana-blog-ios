@@ -19,6 +19,9 @@
 		A1000004000000000000000B /* PhotoViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003000000000000000B /* PhotoViewer.swift */; };
 		A1000004000000000000000C /* CachedImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003000000000000000C /* CachedImage.swift */; };
 		A1000004000000000000000D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003000000000000000D /* Theme.swift */; };
+		A1000004000000000000000E /* GalleryCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003000000000000000E /* GalleryCatalog.swift */; };
+		A1000004000000000000000F /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000003000000000000000F /* GalleryView.swift */; };
+		A10000040000000000000010 /* PhotoDetailLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000030000000000000010 /* PhotoDetailLoader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +39,9 @@
 		A1000003000000000000000B /* PhotoViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoViewer.swift; sourceTree = "<group>"; };
 		A1000003000000000000000C /* CachedImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedImage.swift; sourceTree = "<group>"; };
 		A1000003000000000000000D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		A1000003000000000000000E /* GalleryCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryCatalog.swift; sourceTree = "<group>"; };
+		A1000003000000000000000F /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
+		A10000030000000000000010 /* PhotoDetailLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoDetailLoader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000030000000000000004 /* Post.swift */,
+				A1000003000000000000000E /* GalleryCatalog.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -93,6 +100,7 @@
 				A10000030000000000000006 /* PostCache.swift */,
 				A10000030000000000000007 /* ImageStore.swift */,
 				A10000030000000000000008 /* LibraryModel.swift */,
+				A10000030000000000000010 /* PhotoDetailLoader.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -101,6 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				A1000003000000000000000C /* CachedImage.swift */,
+				A1000003000000000000000F /* GalleryView.swift */,
 				A1000003000000000000000B /* PhotoViewer.swift */,
 				A1000003000000000000000A /* PostDetailView.swift */,
 				A10000030000000000000009 /* PostListView.swift */,
@@ -189,6 +198,9 @@
 				A1000004000000000000000B /* PhotoViewer.swift in Sources */,
 				A1000004000000000000000C /* CachedImage.swift in Sources */,
 				A1000004000000000000000D /* Theme.swift in Sources */,
+				A1000004000000000000000E /* GalleryCatalog.swift in Sources */,
+				A1000004000000000000000F /* GalleryView.swift in Sources */,
+				A10000040000000000000010 /* PhotoDetailLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

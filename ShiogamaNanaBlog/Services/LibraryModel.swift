@@ -6,8 +6,10 @@ import Observation
 final class LibraryModel {
     private(set) var posts: [Post] = []
     private(set) var isLoadingInitial = false
+    private(set) var isHydratingPhotos = false
     private(set) var loadFailed = false
     private(set) var bannerText: String?
+    private(set) var photoBannerText: String?
     private(set) var lastUpdated: Date?
 
     @ObservationIgnored private let cache: PostCache
@@ -23,7 +25,7 @@ final class LibraryModel {
         guard !didStart else { return }
         didStart = true
         if let snapshot = cache.loadList() {
-            posts = snapshot.posts
+            posts = enrich(snapshot.posts)
             lastUpdated = snapshot.fetchedAt
             ImageStore.prefetch(urls: posts.flatMap(\.photoURLs))
         }
@@ -40,19 +42,23 @@ final class LibraryModel {
         do {
             let fresh = try await BlogAPI.fetchPosts()
             let now = Date()
-            posts = fresh
+            let resolved = enrich(fresh)
+            posts = resolved
             for post in fresh { extras.removeValue(forKey: post.id) }
             lastUpdated = now
             loadFailed = false
             bannerText = nil
-            cache.saveList(fresh, fetchedAt: now)
-            for post in fresh { cache.savePost(post) }
-            ImageStore.prefetch(urls: fresh.flatMap(\.photoURLs))
+            photoBannerText = nil
+            cache.saveList(resolved, fetchedAt: now)
+            for post in resolved { cache.savePost(post) }
+            ImageStore.prefetch(urls: resolved.flatMap(\.photoURLs))
+            await hydratePhotoDetails(listPosts: fresh)
         } catch is CancellationError {
             return
         } catch let error as URLError where error.code == .cancelled {
             return
         } catch {
+            photoBannerText = nil
             if posts.isEmpty {
                 loadFailed = true
                 bannerText = nil
@@ -61,6 +67,50 @@ final class LibraryModel {
                 bannerText = "無法更新。目前顯示上次儲存的文章，下拉可再試一次。"
             }
         }
+    }
+
+    /// When the list JSON has no photo blocks, load each post (a few at a
+    /// time) and keep the result on disk so the gallery works offline.
+    private func hydratePhotoDetails(listPosts: [Post]) async {
+        let ids = GalleryCatalog.idsNeedingDetail(listPosts: listPosts)
+        guard !ids.isEmpty else { return }
+        isHydratingPhotos = true
+        defer { isHydratingPhotos = false }
+        let batch = await PhotoDetailLoader.fetch(ids: ids, limit: PhotoDetailLoader.defaultLimit)
+        for post in batch.posts {
+            storeFetchedDetail(post)
+        }
+        if !batch.posts.isEmpty {
+            cache.saveList(posts, fetchedAt: lastUpdated ?? Date())
+        }
+        guard !Task.isCancelled else { return }
+        if batch.failureCount > 0 {
+            if posts.contains(where: { $0.imageCount > 0 }) {
+                photoBannerText = "無法更新全部照片。目前顯示已儲存的內容，下拉可再試一次。"
+            } else {
+                photoBannerText = "無法讀取照片。連線後下拉再試一次。"
+            }
+        }
+    }
+
+    private func storeFetchedDetail(_ detail: Post) {
+        let merged: Post
+        if let index = posts.firstIndex(where: { $0.id == detail.id }) {
+            merged = GalleryCatalog.applyingDetail(detail, onto: posts[index])
+            posts[index] = merged
+        } else {
+            merged = detail
+            extras[detail.id] = detail
+        }
+        cache.savePost(merged)
+        ImageStore.prefetch(urls: merged.photoURLs)
+    }
+
+    private func enrich(_ listPosts: [Post]) -> [Post] {
+        PostSorting.newestFirst(listPosts.map { post in
+            guard let cached = cache.loadPost(id: post.id) else { return post }
+            return GalleryCatalog.preferringCachedBody(listPost: post, cached: cached)
+        })
     }
 
     func resolvedPost(id: String) -> Post? {
